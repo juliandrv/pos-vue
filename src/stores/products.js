@@ -1,24 +1,75 @@
-import { computed } from "vue";
-import { defineStore } from "pinia";
-import { useFirestore } from "vuefire";
-import { collection, addDoc } from "firebase/firestore";
+import { computed } from 'vue';
+import { defineStore } from 'pinia';
+import {
+  useFirestore,
+  useCollection,
+  useFirebaseStorage,
+} from 'vuefire';
+import {
+  collection,
+  addDoc,
+  where,
+  query,
+  limit,
+  orderBy,
+  updateDoc,
+  doc,
+  getDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { ref as storageRef, deleteObject } from 'firebase/storage';
 
-export const useProductsStore = defineStore("products", () => {
+export const useProductsStore = defineStore('products', () => {
   const db = useFirestore();
+  const storage = useFirebaseStorage();
 
   const categories = [
-    { id: 1, name: "Hoodies" },
-    { id: 2, name: "Shoes" },
-    { id: 3, name: "Glasses" },
+    { id: 1, name: 'Hoodies' },
+    { id: 2, name: 'Shoes' },
+    { id: 3, name: 'Glasses' },
   ];
 
+  const q = query(
+    collection(db, 'products'),
+    orderBy('availability', 'asc')
+  );
+  const productsCollection = useCollection(q);
+
   async function createProduct(product) {
-    await addDoc(collection(db, "products"), product);
+    await addDoc(collection(db, 'products'), product);
+  }
+
+  async function updateProduct(docRef, product) {
+    const { image, url, ...values } = product;
+
+    if (image.length) {
+      await updateDoc(docRef, {
+        ...values,
+        image: url.value,
+      });
+    } else {
+      await updateDoc(docRef, values);
+    }
+  }
+
+  async function deleteProduct(id) {
+    if (confirm('Are you sure you want to delete this product?')) {
+      const docRef = doc(db, 'products', id);
+      const docSnap = await getDoc(docRef);
+      const { image } = docSnap.data();
+      const imageRef = storageRef(storage, image);
+
+      await Promise.all([deleteDoc(docRef), deleteObject(imageRef)]);
+    }
   }
 
   const categoryOptions = computed(() => {
     const options = [
-      { label: "Select an option", value: "", attrs: { disabled: true } },
+      {
+        label: 'Select an option',
+        value: '',
+        attrs: { disabled: true },
+      },
       ...categories.map((category) => ({
         label: category.name,
         value: category.id,
@@ -28,8 +79,16 @@ export const useProductsStore = defineStore("products", () => {
     return options;
   });
 
+  const noResults = computed(
+    () => productsCollection.value.length === 0
+  );
+
   return {
     createProduct,
+    updateProduct,
+    deleteProduct,
+    productsCollection,
     categoryOptions,
+    noResults,
   };
 });

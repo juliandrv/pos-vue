@@ -1,6 +1,6 @@
 <script setup>
-import { RouterView } from "vue-router";
-import AdminNav from "../../components/AdminNav.vue";
+import { RouterView } from 'vue-router';
+import AdminNav from '../../components/AdminNav.vue';
 </script>
 
 <template>
