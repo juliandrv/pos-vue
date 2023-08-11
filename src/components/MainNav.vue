@@ -11,7 +11,7 @@ import Link from "./Link.vue";
       </div>
 
       <nav>
-        <Link to="admin">Admin</Link>
+        <Link to="orders">Admin</Link>
       </nav>
     </div>
   </header>

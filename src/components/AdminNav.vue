@@ -18,8 +18,8 @@ import Link from "./Link.vue";
         </RouterLink>
         <RouterLink
           class="rounded text-white font-bold pr-8"
-          :to="{ name: 'sales' }">
-          Sales
+          :to="{ name: 'orders' }">
+          Orders
         </RouterLink>
         <Link to="home">Go to Shop</Link>
       </nav>

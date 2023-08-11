@@ -1,19 +1,18 @@
 <script setup>
-import { useCartStore } from '../stores/cart';
-import { formatCurrency } from '../helpers';
+import { useCartStore } from "../stores/cart";
+import { useCouponsStore } from "../stores/coupons";
+import { formatCurrency } from "../helpers";
 
-import ShoppingCartItem from './ShoppingCartItem.vue';
-import ShoppingCartAmount from './ShoppingCartAmount.vue';
-import CouponForm from './CouponForm.vue';
+import ShoppingCartItem from "./ShoppingCartItem.vue";
+import ShoppingCartAmount from "./ShoppingCartAmount.vue";
+import CouponForm from "./CouponForm.vue";
 
 const cart = useCartStore();
+const coupon = useCouponsStore();
 </script>
 
 <template>
-  <h3
-    v-if="cart.isCartEmpty"
-    class="text-2xl text-gray-900 font-bold"
-  >
+  <h3 v-if="cart.isCartEmpty" class="text-2xl text-gray-900 font-bold">
     Cart is empty
   </h3>
 
@@ -24,13 +23,11 @@ const cart = useCartStore();
       <ShoppingCartItem
         v-for="item in cart.items"
         :key="item.id"
-        :item="item"
-      />
+        :item="item" />
     </ul>
 
     <dl
-      class="space-y-1 border-t border-gray-200 pt-6 text-sm font-medium text-gray-500"
-    >
+      class="space-y-1 border-t border-gray-200 pt-6 text-sm font-medium text-gray-500">
       <ShoppingCartAmount>
         <template #label> Subtotal: </template>
         {{ formatCurrency(cart.subtotal) }}
@@ -41,14 +38,24 @@ const cart = useCartStore();
         {{ formatCurrency(cart.taxes) }}
       </ShoppingCartAmount>
 
+      <ShoppingCartAmount v-if="coupon.isValidCoupon">
+        <template #label> Discount: </template>
+        {{ formatCurrency(coupon.discount) }}
+      </ShoppingCartAmount>
+
       <ShoppingCartAmount>
         <template #label> Total: </template>
-        <span class="font-bold">{{
-          formatCurrency(cart.total)
-        }}</span>
+        <span class="font-bold">{{ formatCurrency(cart.total) }}</span>
       </ShoppingCartAmount>
     </dl>
 
     <CouponForm />
+
+    <button
+      type="button"
+      class="mt-10 w-full bg-indigo-600 hover:bg-indigo-700 text-white uppercase font-bold p-3 rounded"
+      @click="cart.checkout">
+      Confirm
+    </button>
   </div>
 </template>
